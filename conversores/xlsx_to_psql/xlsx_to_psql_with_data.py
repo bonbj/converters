@@ -188,13 +188,16 @@ def excel_to_sql(excel_path, sql_path):
 
 
 def main():
-    """Função principal que processa todos os arquivos Excel na pasta xlsx."""
-    # Define os diretórios
-    xlsx_dir = Path("xlsx")
-    sql_dir = Path("psql")
+    """Função principal que processa todos os arquivos Excel na pasta files/xlsx."""
+    # Define os diretórios (relativos à raiz do projeto)
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent.parent
+    xlsx_dir = project_root / "files" / "xlsx"
+    sql_dir = project_root / "files" / "psql"
     
-    # Cria a pasta psql se não existir
-    sql_dir.mkdir(exist_ok=True)
+    # Cria as pastas se não existirem
+    xlsx_dir.mkdir(parents=True, exist_ok=True)
+    sql_dir.mkdir(parents=True, exist_ok=True)
     
     # Verifica se a pasta xlsx existe
     if not xlsx_dir.exists():
@@ -206,6 +209,7 @@ def main():
     
     if not xlsx_files:
         print(f"Nenhum arquivo .xlsx encontrado na pasta '{xlsx_dir}'")
+        print(f"Coloque seus arquivos Excel em: {xlsx_dir}")
         return
     
     print(f"Encontrados {len(xlsx_files)} arquivo(s) Excel para converter...\n")

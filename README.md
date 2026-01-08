@@ -14,12 +14,12 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
 
 #### Scripts Disponíveis
 
-1. **`xlsx_to_psql_no_data.py`**
+1. **`conversores/xlsx_to_psql/xlsx_to_psql_no_data.py`**
    - Gera apenas a estrutura do banco (CREATE TABLE)
    - Não inclui dados (INSERT)
    - Arquivo gerado: `psql-no-data-{nome_arquivo}.sql`
 
-2. **`xlsx_to_psql_with_data.py`**
+2. **`conversores/xlsx_to_psql/xlsx_to_psql_with_data.py`**
    - Gera a estrutura do banco (CREATE TABLE) + dados (INSERT)
    - Inclui todos os dados do arquivo Excel
    - Arquivo gerado: `psql-with-data-{nome_arquivo}.sql`
@@ -28,24 +28,27 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
 
 ```
 invest-sus/
-├── xlsx/                    # Pasta com arquivos Excel de origem
-│   └── *.xlsx
-├── psql/                    # Pasta com arquivos SQL gerados
-│   ├── psql-no-data-*.sql
-│   └── psql-with-data-*.sql
-├── xlsx_to_psql_no_data.py # Conversor: Excel → PostgreSQL (sem dados)
-├── xlsx_to_psql_with_data.py # Conversor: Excel → PostgreSQL (com dados)
-├── requirements.txt         # Dependências do projeto
+├── files/                   # Pasta modular para arquivos de entrada e saída
+│   ├── xlsx/                # Arquivos Excel de origem
+│   │   └── *.xlsx
+│   └── psql/                # Arquivos SQL gerados
+│       ├── psql-no-data-*.sql
+│       └── psql-with-data-*.sql
+├── conversores/             # Pasta com todos os conversores
+│   └── xlsx_to_psql/        # Conversor: Excel → PostgreSQL
+│       ├── xlsx_to_psql_no_data.py
+│       ├── xlsx_to_psql_with_data.py
+│       └── requirements.txt
 └── README.md               # Este arquivo
 ```
 
 ## 🛠️ Instalação
 
 1. Clone o repositório ou baixe os arquivos
-2. Instale as dependências:
+2. Instale as dependências do conversor:
 
 ```bash
-pip install -r requirements.txt
+pip install -r conversores/xlsx_to_psql/requirements.txt
 ```
 
 ## 📖 Como Usar
@@ -55,7 +58,7 @@ pip install -r requirements.txt
 Para gerar apenas a estrutura das tabelas:
 
 ```bash
-python xlsx_to_psql_no_data.py
+python conversores/xlsx_to_psql/xlsx_to_psql_no_data.py
 ```
 
 ### Converter Excel para PostgreSQL (com dados)
@@ -63,14 +66,14 @@ python xlsx_to_psql_no_data.py
 Para gerar a estrutura e os dados:
 
 ```bash
-python xlsx_to_psql_with_data.py
+python conversores/xlsx_to_psql/xlsx_to_psql_with_data.py
 ```
 
 ### Processo
 
-1. Coloque seus arquivos `.xlsx` na pasta `xlsx/`
+1. Coloque seus arquivos `.xlsx` na pasta `files/xlsx/`
 2. Execute o script desejado
-3. Os arquivos SQL serão gerados na pasta `psql/`
+3. Os arquivos SQL serão gerados na pasta `files/psql/`
 
 ## 🔧 Funcionalidades
 
@@ -98,10 +101,16 @@ Os scripts SQL gerados incluem comentários com os nomes originais das colunas d
 
 Este projeto foi projetado para ser facilmente expandido. Para adicionar novos conversores:
 
-1. Crie um novo script Python seguindo o padrão: `{origem}_to_{destino}.py`
-2. Implemente as funções de conversão necessárias
-3. Adicione as dependências no `requirements.txt` se necessário
-4. Documente o novo conversor neste README
+1. Crie uma nova pasta dentro de `conversores/` seguindo o padrão: `{origem}_to_{destino}/`
+2. Crie os scripts Python necessários dentro dessa pasta
+3. Adicione um arquivo `requirements.txt` na pasta do conversor com as dependências específicas
+4. Implemente as funções de conversão necessárias
+5. Use a estrutura modular `files/` para organizar arquivos de entrada e saída
+6. Documente o novo conversor neste README
+
+### Estrutura Modular
+
+A pasta `files/` foi criada para manter a organização modular do projeto. Cada conversor pode usar subpastas específicas dentro de `files/` para seus arquivos de entrada e saída, facilitando a manutenção e expansão do projeto.
 
 ### Exemplos de Conversores Futuros
 
@@ -118,10 +127,11 @@ Este projeto foi projetado para ser facilmente expandido. Para adicionar novos c
 
 ## ⚠️ Observações
 
-- Os arquivos Excel devem estar na pasta `xlsx/`
-- Os arquivos SQL gerados são salvos na pasta `psql/`
+- Os arquivos Excel devem estar na pasta `files/xlsx/`
+- Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
 - Os scripts criam as pastas de destino automaticamente se não existirem
+- A estrutura modular em `files/` permite que cada conversor tenha suas próprias pastas organizadas
 
 ## 📄 Licença
 

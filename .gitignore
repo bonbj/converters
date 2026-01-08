@@ -1,2 +1,2 @@
-psql/*.sql
-xlsx/*.xlsx
+files/psql/*.sql
+files/xlsx/*.xlsx
