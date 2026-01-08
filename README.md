@@ -24,6 +24,19 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
    - Inclui todos os dados do arquivo Excel
    - Arquivo gerado: `psql-with-data-{nome_arquivo}.sql`
 
+### Excel para CSV
+
+Converte arquivos Excel (.xlsx) em arquivos CSV. Processa arquivos Excel da pasta `files/xlsx/` e gera CSVs na pasta `files/csv/`.
+
+#### Script Disponível
+
+1. **`conversores/xlsx_to_csv/xlsx_to_csv.py`**
+   - Converte arquivos .xlsx para CSV
+   - Processa múltiplos arquivos automaticamente
+   - Usa ponto e vírgula (;) como delimitador (padrão brasileiro)
+   - Converte apenas a primeira planilha de cada arquivo Excel
+   - Arquivos gerados: `files/csv/{nome_arquivo}.csv`
+
 ### CSV para PostgreSQL
 
 Converte arquivos CSV em scripts SQL para PostgreSQL, gerando a estrutura das tabelas e opcionalmente os dados. Processa arquivos CSV na raiz de `files/csv/` e em subpastas.
@@ -78,6 +91,9 @@ converter/
 │   │   ├── xlsx_to_psql_no_data.py
 │   │   ├── xlsx_to_psql_with_data.py
 │   │   └── requirements.txt
+│   ├── xlsx_to_csv/         # Conversor: Excel → CSV
+│   │   ├── xlsx_to_csv.py
+│   │   └── requirements.txt
 │   ├── csv_to_psql/         # Conversor: CSV → PostgreSQL
 │   │   ├── csv_to_psql_no_data.py
 │   │   ├── csv_to_psql_with_data.py
@@ -116,6 +132,14 @@ Para gerar a estrutura e os dados:
 python conversores/xlsx_to_psql/xlsx_to_psql_with_data.py
 ```
 
+### Converter Excel para CSV
+
+Para converter arquivos Excel para CSV:
+
+```bash
+python conversores/xlsx_to_csv/xlsx_to_csv.py
+```
+
 ### Converter CSV para PostgreSQL (sem dados)
 
 Para gerar apenas a estrutura das tabelas:
@@ -146,6 +170,13 @@ python conversores/gdb_to_csv/gdb_to_csv.py
 1. Coloque seus arquivos `.xlsx` na pasta `files/xlsx/`
 2. Execute o script desejado
 3. Os arquivos SQL serão gerados na pasta `files/psql/`
+
+**Excel para CSV:**
+1. Coloque seus arquivos `.xlsx` na pasta `files/xlsx/`
+2. Execute o script `xlsx_to_csv.py`
+3. Os arquivos CSV serão gerados na pasta `files/csv/`
+   - Usa ponto e vírgula (;) como delimitador
+   - Converte apenas a primeira planilha de cada arquivo
 
 **CSV para PostgreSQL:**
 1. Coloque seus arquivos `.csv` na pasta `files/csv/` (raiz ou em subpastas)
@@ -209,6 +240,10 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - `pandas>=2.0.0`: Manipulação de dados
 - `openpyxl>=3.1.0`: Leitura de arquivos Excel
 
+### Excel para CSV
+- `pandas>=2.0.0`: Manipulação de dados
+- `openpyxl>=3.1.0`: Leitura de arquivos Excel
+
 ### CSV para PostgreSQL
 - `pandas>=2.0.0`: Manipulação de dados e leitura de arquivos CSV
 
@@ -223,6 +258,13 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Os arquivos Excel devem estar na pasta `files/xlsx/`
 - Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
+
+### Excel para CSV
+- Os arquivos Excel devem estar na pasta `files/xlsx/`
+- Os arquivos CSV gerados são salvos na pasta `files/csv/`
+- Usa ponto e vírgula (;) como delimitador (padrão brasileiro)
+- Converte apenas a primeira planilha de cada arquivo Excel
+- Se o arquivo tiver múltiplas planilhas, apenas a primeira será convertida
 
 ### CSV para PostgreSQL
 - Os arquivos CSV podem estar na raiz de `files/csv/` ou em subpastas
