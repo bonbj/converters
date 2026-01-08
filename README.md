@@ -24,6 +24,22 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
    - Inclui todos os dados do arquivo Excel
    - Arquivo gerado: `psql-with-data-{nome_arquivo}.sql`
 
+### CSV para PostgreSQL
+
+Converte arquivos CSV em scripts SQL para PostgreSQL, gerando a estrutura das tabelas e opcionalmente os dados. Processa arquivos CSV na raiz de `files/csv/` e em subpastas.
+
+#### Scripts Disponíveis
+
+1. **`conversores/csv_to_psql/csv_to_psql_no_data.py`**
+   - Gera apenas a estrutura do banco (CREATE TABLE)
+   - Não inclui dados (INSERT)
+   - Arquivo gerado: `psql-no-data-csv.sql`
+
+2. **`conversores/csv_to_psql/csv_to_psql_with_data.py`**
+   - Gera a estrutura do banco (CREATE TABLE) + dados (INSERT)
+   - Inclui todos os dados dos arquivos CSV
+   - Arquivo gerado: `psql-with-data-csv.sql`
+
 ### GDB para CSV
 
 Converte arquivos GDB (Firebird) para CSV utilizando o módulo f2cagent.
@@ -47,8 +63,9 @@ converter/
 │   │   └── *.xlsx
 │   ├── gdb/                 # Arquivos GDB de origem
 │   │   └── *.GDB
-│   ├── csv/                 # Arquivos CSV gerados
-│   │   └── {nome_arquivo}/
+│   ├── csv/                 # Arquivos CSV (origem ou gerados)
+│   │   ├── *.csv            # CSVs na raiz
+│   │   └── {nome_arquivo}/  # CSVs em subpastas
 │   │       └── *.csv
 │   └── psql/                # Arquivos SQL gerados
 │       ├── psql-no-data-*.sql
@@ -60,6 +77,10 @@ converter/
 │   ├── xlsx_to_psql/        # Conversor: Excel → PostgreSQL
 │   │   ├── xlsx_to_psql_no_data.py
 │   │   ├── xlsx_to_psql_with_data.py
+│   │   └── requirements.txt
+│   ├── csv_to_psql/         # Conversor: CSV → PostgreSQL
+│   │   ├── csv_to_psql_no_data.py
+│   │   ├── csv_to_psql_with_data.py
 │   │   └── requirements.txt
 │   └── gdb_to_csv/          # Conversor: GDB → CSV
 │       ├── gdb_to_csv.py
@@ -95,6 +116,22 @@ Para gerar a estrutura e os dados:
 python conversores/xlsx_to_psql/xlsx_to_psql_with_data.py
 ```
 
+### Converter CSV para PostgreSQL (sem dados)
+
+Para gerar apenas a estrutura das tabelas:
+
+```bash
+python conversores/csv_to_psql/csv_to_psql_no_data.py
+```
+
+### Converter CSV para PostgreSQL (com dados)
+
+Para gerar a estrutura e os dados:
+
+```bash
+python conversores/csv_to_psql/csv_to_psql_with_data.py
+```
+
 ### Converter GDB para CSV
 
 Para converter arquivos GDB (Firebird) para CSV:
@@ -109,6 +146,12 @@ python conversores/gdb_to_csv/gdb_to_csv.py
 1. Coloque seus arquivos `.xlsx` na pasta `files/xlsx/`
 2. Execute o script desejado
 3. Os arquivos SQL serão gerados na pasta `files/psql/`
+
+**CSV para PostgreSQL:**
+1. Coloque seus arquivos `.csv` na pasta `files/csv/` (raiz ou em subpastas)
+2. Execute o script desejado
+3. Os arquivos SQL serão gerados na pasta `files/psql/`
+   - Todos os CSVs são processados em um único arquivo SQL
 
 **GDB para CSV:**
 1. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
@@ -166,6 +209,9 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - `pandas>=2.0.0`: Manipulação de dados
 - `openpyxl>=3.1.0`: Leitura de arquivos Excel
 
+### CSV para PostgreSQL
+- `pandas>=2.0.0`: Manipulação de dados e leitura de arquivos CSV
+
 ### GDB para CSV
 - Nenhuma dependência Python adicional (usa bibliotecas padrão)
 - **Requisito**: Windows apenas
@@ -175,6 +221,14 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 
 ### Excel para PostgreSQL
 - Os arquivos Excel devem estar na pasta `files/xlsx/`
+- Os arquivos SQL gerados são salvos na pasta `files/psql/`
+- Para arquivos grandes, o script com dados pode demorar mais tempo
+
+### CSV para PostgreSQL
+- Os arquivos CSV podem estar na raiz de `files/csv/` ou em subpastas
+- Todos os arquivos CSV são processados em um único arquivo SQL
+- Detecta automaticamente o delimitador (vírgula, ponto e vírgula, tab, pipe)
+- Arquivos em subpastas recebem prefixo no nome da tabela (ex: `casinhas_cnesh_nfces001`)
 - Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
 
