@@ -1,2 +1,5 @@
 files/psql/*.sql
 files/xlsx/*.xlsx
+files/gdb/*.GDB
+files/csv/*.csv
+files/csv/**/*.csv

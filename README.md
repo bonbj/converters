@@ -24,21 +24,47 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
    - Inclui todos os dados do arquivo Excel
    - Arquivo gerado: `psql-with-data-{nome_arquivo}.sql`
 
+### GDB para CSV
+
+Converte arquivos GDB (Firebird) para CSV utilizando o módulo f2cagent.
+
+⚠️ **Requisito**: Windows apenas - Requer `modules/f2cagent/f2cagent.exe`
+
+#### Script Disponível
+
+1. **`conversores/gdb_to_csv/gdb_to_csv.py`**
+   - Converte arquivos .GDB para CSV
+   - Processa múltiplos arquivos automaticamente
+   - Cria pastas separadas para cada arquivo convertido
+   - Arquivos gerados: `files/csv/{nome_arquivo}/*.csv`
+
 ## 📁 Estrutura do Projeto
 
 ```
-invest-sus/
+converter/
 ├── files/                   # Pasta modular para arquivos de entrada e saída
 │   ├── xlsx/                # Arquivos Excel de origem
 │   │   └── *.xlsx
+│   ├── gdb/                 # Arquivos GDB de origem
+│   │   └── *.GDB
+│   ├── csv/                 # Arquivos CSV gerados
+│   │   └── {nome_arquivo}/
+│   │       └── *.csv
 │   └── psql/                # Arquivos SQL gerados
 │       ├── psql-no-data-*.sql
 │       └── psql-with-data-*.sql
+├── modules/                 # Módulos externos necessários
+│   └── f2cagent/            # Conversor GDB (Windows)
+│       └── f2cagent.exe
 ├── conversores/             # Pasta com todos os conversores
-│   └── xlsx_to_psql/        # Conversor: Excel → PostgreSQL
-│       ├── xlsx_to_psql_no_data.py
-│       ├── xlsx_to_psql_with_data.py
-│       └── requirements.txt
+│   ├── xlsx_to_psql/        # Conversor: Excel → PostgreSQL
+│   │   ├── xlsx_to_psql_no_data.py
+│   │   ├── xlsx_to_psql_with_data.py
+│   │   └── requirements.txt
+│   └── gdb_to_csv/          # Conversor: GDB → CSV
+│       ├── gdb_to_csv.py
+│       ├── requirements.txt
+│       └── README.md
 └── README.md               # Este arquivo
 ```
 
@@ -69,11 +95,25 @@ Para gerar a estrutura e os dados:
 python conversores/xlsx_to_psql/xlsx_to_psql_with_data.py
 ```
 
+### Converter GDB para CSV
+
+Para converter arquivos GDB (Firebird) para CSV:
+
+```bash
+python conversores/gdb_to_csv/gdb_to_csv.py
+```
+
 ### Processo
 
+**Excel para PostgreSQL:**
 1. Coloque seus arquivos `.xlsx` na pasta `files/xlsx/`
 2. Execute o script desejado
 3. Os arquivos SQL serão gerados na pasta `files/psql/`
+
+**GDB para CSV:**
+1. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
+2. Execute o script `gdb_to_csv.py`
+3. Os arquivos CSV serão gerados em `files/csv/{nome_arquivo}/`
 
 ## 🔧 Funcionalidades
 
@@ -122,14 +162,30 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 
 ## 📝 Dependências
 
+### Excel para PostgreSQL
 - `pandas>=2.0.0`: Manipulação de dados
 - `openpyxl>=3.1.0`: Leitura de arquivos Excel
 
+### GDB para CSV
+- Nenhuma dependência Python adicional (usa bibliotecas padrão)
+- **Requisito**: Windows apenas
+- **Requisito**: Módulo `f2cagent.exe` em `modules/f2cagent/f2cagent.exe`
+
 ## ⚠️ Observações
 
+### Excel para PostgreSQL
 - Os arquivos Excel devem estar na pasta `files/xlsx/`
 - Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
+
+### GDB para CSV
+- **Windows apenas**: Este conversor só funciona no Windows
+- Os arquivos GDB devem estar na pasta `files/gdb/`
+- Os arquivos CSV são gerados em `files/csv/{nome_arquivo}/`
+- Requer o módulo `f2cagent.exe` em `modules/f2cagent/f2cagent.exe`
+- Os arquivos GDB originais são mantidos na pasta após a conversão
+
+### Geral
 - Os scripts criam as pastas de destino automaticamente se não existirem
 - A estrutura modular em `files/` permite que cada conversor tenha suas próprias pastas organizadas
 

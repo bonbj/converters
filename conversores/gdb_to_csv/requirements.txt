@@ -1,0 +1,5 @@
+# Este conversor não requer dependências Python adicionais
+# Utiliza apenas bibliotecas padrão do Python (subprocess, pathlib, shutil)
+#
+# REQUISITO: Windows apenas
+# REQUISITO: Módulo f2cagent.exe em modules/f2cagent/f2cagent.exe
