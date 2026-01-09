@@ -1,0 +1,2 @@
+# Este utilitário não requer dependências Python adicionais
+# Utiliza apenas bibliotecas padrão do Python (pathlib)

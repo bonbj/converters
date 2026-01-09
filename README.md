@@ -67,6 +67,18 @@ Converte arquivos GDB (Firebird) para CSV utilizando o módulo f2cagent.
    - Cria pastas separadas para cada arquivo convertido
    - Arquivos gerados: `files/csv/{nome_arquivo}/*.csv`
 
+### Utilitários
+
+#### Divisor de Arquivos SQL
+
+Divide arquivos SQL grandes em blocos menores para facilitar o restore.
+
+1. **`conversores/sql_splitter/sql_splitter.py`**
+   - Divide arquivos SQL em blocos de 50.000 linhas (configurável)
+   - Útil para arquivos SQL muito grandes (>1 milhão de linhas)
+   - Gera arquivos numerados: `{nome}_parte_001.sql`, `{nome}_parte_002.sql`, etc.
+   - Arquivos gerados na mesma pasta do arquivo original
+
 ## 📁 Estrutura do Projeto
 
 ```
@@ -98,10 +110,13 @@ converter/
 │   │   ├── csv_to_psql_no_data.py
 │   │   ├── csv_to_psql_with_data.py
 │   │   └── requirements.txt
-│   └── gdb_to_csv/          # Conversor: GDB → CSV
-│       ├── gdb_to_csv.py
-│       ├── requirements.txt
-│       └── README.md
+│   ├── gdb_to_csv/          # Conversor: GDB → CSV
+│   │   ├── gdb_to_csv.py
+│   │   ├── requirements.txt
+│   │   └── README.md
+│   └── sql_splitter/        # Utilitário: Divisor de SQL
+│       ├── sql_splitter.py
+│       └── requirements.txt
 └── README.md               # Este arquivo
 ```
 
@@ -164,6 +179,14 @@ Para converter arquivos GDB (Firebird) para CSV:
 python conversores/gdb_to_csv/gdb_to_csv.py
 ```
 
+### Dividir Arquivo SQL Grande
+
+Para dividir um arquivo SQL grande em blocos menores:
+
+```bash
+python conversores/sql_splitter/sql_splitter.py
+```
+
 ### Processo
 
 **Excel para PostgreSQL:**
@@ -188,6 +211,12 @@ python conversores/gdb_to_csv/gdb_to_csv.py
 1. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
 2. Execute o script `gdb_to_csv.py`
 3. Os arquivos CSV serão gerados em `files/csv/{nome_arquivo}/`
+
+**Dividir Arquivo SQL:**
+1. Coloque seu arquivo `.sql` na pasta `files/psql/`
+2. Execute o script `sql_splitter.py`
+3. O arquivo será dividido em blocos de 50.000 linhas
+4. Arquivos gerados: `{nome}_parte_001.sql`, `{nome}_parte_002.sql`, etc.
 
 ## 🔧 Funcionalidades
 
@@ -280,6 +309,13 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Os arquivos CSV são gerados em `files/csv/{nome_arquivo}/`
 - Requer o módulo `f2cagent.exe` em `modules/f2cagent/f2cagent.exe`
 - Os arquivos GDB originais são mantidos na pasta após a conversão
+
+### Divisor de Arquivos SQL
+- Divide arquivos SQL em blocos de 50.000 linhas (padrão)
+- Útil para arquivos SQL muito grandes (>1 milhão de linhas)
+- Facilita o restore em partes menores
+- Arquivos gerados na mesma pasta do arquivo original
+- Mantém a estrutura SQL válida (não corta comandos no meio)
 
 ### Geral
 - Os scripts criam as pastas de destino automaticamente se não existirem
