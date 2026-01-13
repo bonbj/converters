@@ -24,6 +24,11 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
    - Inclui todos os dados do arquivo Excel
    - Arquivo gerado: `psql-with-data-{nome_arquivo}.sql`
 
+3. **`conversores/xlsx_to_psql/xlsx_to_psql_inserts_only.py`**
+   - Gera apenas os INSERTs (sem CREATE TABLE)
+   - Útil quando a estrutura já existe no banco
+   - Arquivo gerado: `psql-inserts-only-{nome_arquivo}.sql`
+
 ### Excel para CSV
 
 Converte arquivos Excel (.xlsx) em arquivos CSV. Processa arquivos Excel da pasta `files/xlsx/` e gera CSVs na pasta `files/csv/`.
@@ -52,6 +57,27 @@ Converte arquivos CSV em scripts SQL para PostgreSQL, gerando a estrutura das ta
    - Gera a estrutura do banco (CREATE TABLE) + dados (INSERT)
    - Inclui todos os dados dos arquivos CSV
    - Arquivo gerado: `psql-with-data-csv.sql`
+
+### DBC para PostgreSQL
+
+Converte arquivos DBC (dBASE/FoxPro) em scripts SQL para PostgreSQL. Suporta arquivos .dbc e .dbf.
+
+#### Scripts Disponíveis
+
+1. **`conversores/dbc_to_psql/dbc_to_psql_no_data.py`**
+   - Gera apenas a estrutura do banco (CREATE TABLE)
+   - Não inclui dados (INSERT)
+   - Arquivo gerado: `psql-no-data-dbc.sql`
+
+2. **`conversores/dbc_to_psql/dbc_to_psql_with_data.py`**
+   - Gera a estrutura do banco (CREATE TABLE) + dados (INSERT)
+   - Inclui todos os dados dos arquivos DBC
+   - Arquivo gerado: `psql-with-data-dbc.sql`
+
+3. **`conversores/dbc_to_psql/dbc_to_psql_inserts_only.py`**
+   - Gera apenas os INSERTs (sem CREATE TABLE)
+   - Útil quando a estrutura já existe no banco
+   - Arquivo gerado: `psql-inserts-only-dbc.sql`
 
 ### GDB para CSV
 
@@ -86,6 +112,9 @@ converter/
 ├── files/                   # Pasta modular para arquivos de entrada e saída
 │   ├── xlsx/                # Arquivos Excel de origem
 │   │   └── *.xlsx
+│   ├── dbc/                 # Arquivos DBC de origem
+│   │   ├── *.dbc
+│   │   └── *.dbf
 │   ├── gdb/                 # Arquivos GDB de origem
 │   │   └── *.GDB
 │   ├── csv/                 # Arquivos CSV (origem ou gerados)
@@ -109,6 +138,11 @@ converter/
 │   ├── csv_to_psql/         # Conversor: CSV → PostgreSQL
 │   │   ├── csv_to_psql_no_data.py
 │   │   ├── csv_to_psql_with_data.py
+│   │   └── requirements.txt
+│   ├── dbc_to_psql/         # Conversor: DBC → PostgreSQL
+│   │   ├── dbc_to_psql_no_data.py
+│   │   ├── dbc_to_psql_with_data.py
+│   │   ├── dbc_to_psql_inserts_only.py
 │   │   └── requirements.txt
 │   ├── gdb_to_csv/          # Conversor: GDB → CSV
 │   │   ├── gdb_to_csv.py
@@ -147,6 +181,14 @@ Para gerar a estrutura e os dados:
 python conversores/xlsx_to_psql/xlsx_to_psql_with_data.py
 ```
 
+### Converter Excel para PostgreSQL (apenas INSERTs)
+
+Para gerar apenas os INSERTs (sem CREATE TABLE):
+
+```bash
+python conversores/xlsx_to_psql/xlsx_to_psql_inserts_only.py
+```
+
 ### Converter Excel para CSV
 
 Para converter arquivos Excel para CSV:
@@ -169,6 +211,30 @@ Para gerar a estrutura e os dados:
 
 ```bash
 python conversores/csv_to_psql/csv_to_psql_with_data.py
+```
+
+### Converter DBC para PostgreSQL (sem dados)
+
+Para gerar apenas a estrutura das tabelas:
+
+```bash
+python conversores/dbc_to_psql/dbc_to_psql_no_data.py
+```
+
+### Converter DBC para PostgreSQL (com dados)
+
+Para gerar a estrutura e os dados:
+
+```bash
+python conversores/dbc_to_psql/dbc_to_psql_with_data.py
+```
+
+### Converter DBC para PostgreSQL (apenas INSERTs)
+
+Para gerar apenas os INSERTs:
+
+```bash
+python conversores/dbc_to_psql/dbc_to_psql_inserts_only.py
 ```
 
 ### Converter GDB para CSV
@@ -206,6 +272,13 @@ python conversores/sql_splitter/sql_splitter.py
 2. Execute o script desejado
 3. Os arquivos SQL serão gerados na pasta `files/psql/`
    - Todos os CSVs são processados em um único arquivo SQL
+
+**DBC para PostgreSQL:**
+1. Coloque seus arquivos `.dbc` ou `.dbf` na pasta `files/dbc/`
+2. Execute o script desejado
+3. Os arquivos SQL serão gerados na pasta `files/psql/`
+   - Todos os DBCs são processados em um único arquivo SQL
+   - Suporta encoding Latin1 (padrão dBASE/FoxPro)
 
 **GDB para CSV:**
 1. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
@@ -276,6 +349,9 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 ### CSV para PostgreSQL
 - `pandas>=2.0.0`: Manipulação de dados e leitura de arquivos CSV
 
+### DBC para PostgreSQL
+- `dbfread>=2.0.7`: Leitura de arquivos DBC/dBASE/FoxPro
+
 ### GDB para CSV
 - Nenhuma dependência Python adicional (usa bibliotecas padrão)
 - **Requisito**: Windows apenas
@@ -302,6 +378,15 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Arquivos em subpastas recebem prefixo no nome da tabela (ex: `casinhas_cnesh_nfces001`)
 - Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
+
+### DBC para PostgreSQL
+- Os arquivos DBC devem estar na pasta `files/dbc/`
+- Suporta arquivos `.dbc` e `.dbf` (dBASE/FoxPro)
+- Todos os arquivos DBC são processados em um único arquivo SQL
+- Usa encoding Latin1 (padrão dBASE/FoxPro)
+- Converte tipos DBC para tipos PostgreSQL automaticamente
+- Os arquivos SQL gerados são salvos na pasta `files/psql/`
+- Três opções: apenas estrutura, estrutura + dados, ou apenas INSERTs
 
 ### GDB para CSV
 - **Windows apenas**: Este conversor só funciona no Windows

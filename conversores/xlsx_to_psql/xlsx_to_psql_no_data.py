@@ -65,48 +65,94 @@ def infer_postgres_type(series):
     return 'TEXT'
 
 
+def processar_planilha(df, table_name, excel_path, sheet_name):
+    """Processa uma planilha e retorna o SQL gerado."""
+    sql_lines = []
+    
+    if df.empty:
+        sql_lines.append(f"-- Planilha '{sheet_name}' está vazia\n\n")
+        return sql_lines
+    
+    # Gera o SQL
+    sql_lines.append(f"-- Tabela gerada a partir de: {Path(excel_path).name} - Planilha: {sheet_name}\n")
+    sql_lines.append(f"CREATE TABLE IF NOT EXISTS {table_name} (\n")
+    
+    columns = []
+    for col in df.columns:
+        col_name = sanitize_name(str(col))
+        col_type = infer_postgres_type(df[col])
+        nullable = "NULL" if df[col].isna().any() else "NOT NULL"
+        columns.append(f"    {col_name} {col_type} {nullable}")
+    
+    sql_lines.append(",\n".join(columns))
+    sql_lines.append("\n);\n")
+    
+    # Adiciona comentários sobre as colunas originais
+    sql_lines.append("\n-- Comentários sobre as colunas:\n")
+    for col in df.columns:
+        col_name = sanitize_name(str(col))
+        original_name = str(col).replace("'", "''")
+        sql_lines.append(f"COMMENT ON COLUMN {table_name}.{col_name} IS '{original_name}';\n")
+    
+    sql_lines.append("\n")
+    return sql_lines
+
+
 def excel_to_sql(excel_path, sql_path):
-    """Converte um arquivo Excel em script SQL PostgreSQL."""
+    """Converte um arquivo Excel em script SQL PostgreSQL (todas as planilhas)."""
     try:
-        # Lê o arquivo Excel
-        df = pd.read_excel(excel_path, sheet_name=0)
+        # Abrir arquivo Excel para ler todas as planilhas
+        excel_file = pd.ExcelFile(excel_path)
+        sheet_names = excel_file.sheet_names
         
-        if df.empty:
-            print(f"Aviso: {excel_path} está vazio. Pulando...")
+        if not sheet_names:
+            print(f"Aviso: {excel_path} não possui planilhas. Pulando...")
             return
         
-        # Nome da tabela baseado no nome do arquivo
-        table_name = sanitize_name(Path(excel_path).stem)
+        # Nome base do arquivo
+        arquivo_base = sanitize_name(Path(excel_path).stem)
         
-        # Gera o SQL
-        sql_lines = [f"-- Tabela gerada a partir de: {Path(excel_path).name}\n"]
-        sql_lines.append(f"CREATE TABLE IF NOT EXISTS {table_name} (\n")
+        # Determinar se precisa usar prefixo do arquivo no nome da tabela
+        usar_prefixo = len(sheet_names) > 1
         
-        columns = []
-        for col in df.columns:
-            col_name = sanitize_name(str(col))
-            col_type = infer_postgres_type(df[col])
-            nullable = "NULL" if df[col].isna().any() else "NOT NULL"
-            columns.append(f"    {col_name} {col_type} {nullable}")
+        # Gera o SQL para todas as planilhas
+        sql_lines = [f"-- Tabelas geradas a partir de: {Path(excel_path).name}\n"]
+        sql_lines.append(f"-- Total de planilhas: {len(sheet_names)}\n\n")
         
-        sql_lines.append(",\n".join(columns))
-        sql_lines.append("\n);\n")
+        planilhas_processadas = 0
         
-        # Adiciona comentários sobre as colunas originais
-        sql_lines.append("\n-- Comentários sobre as colunas:\n")
-        for col in df.columns:
-            col_name = sanitize_name(str(col))
-            original_name = str(col).replace("'", "''")
-            sql_lines.append(f"COMMENT ON COLUMN {table_name}.{col_name} IS '{original_name}';\n")
+        for sheet_name in sheet_names:
+            try:
+                # Lê a planilha
+                df = pd.read_excel(excel_path, sheet_name=sheet_name)
+                
+                # Nome da tabela
+                if usar_prefixo:
+                    sheet_name_sanitized = sanitize_name(sheet_name)
+                    table_name = f"{arquivo_base}_{sheet_name_sanitized}"
+                else:
+                    table_name = arquivo_base
+                
+                # Processa a planilha
+                sql_planilha = processar_planilha(df, table_name, excel_path, sheet_name)
+                sql_lines.extend(sql_planilha)
+                
+                planilhas_processadas += 1
+                print(f"  ✓ Planilha '{sheet_name}' -> Tabela '{table_name}'")
+                
+            except Exception as e:
+                print(f"  ✗ Erro ao processar planilha '{sheet_name}': {str(e)}")
         
         # Escreve o arquivo SQL
         with open(sql_path, 'w', encoding='utf-8') as f:
             f.write("".join(sql_lines))
         
-        print(f"✓ Convertido: {excel_path} -> {sql_path}")
+        print(f"✓ Convertido: {excel_path} -> {sql_path} ({planilhas_processadas}/{len(sheet_names)} planilhas)")
         
     except Exception as e:
         print(f"✗ Erro ao processar {excel_path}: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 
 def main():

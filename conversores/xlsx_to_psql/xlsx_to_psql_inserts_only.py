@@ -1,6 +1,6 @@
 """
-Script para converter arquivos Excel (.xlsx) em modelos PostgreSQL (SQL).
-Gera a estrutura do banco (CREATE TABLE) e os dados (INSERT).
+Script para converter arquivos Excel (.xlsx) em scripts SQL PostgreSQL.
+Gera apenas os INSERTs, sem CREATE TABLE.
 """
 
 import os
@@ -24,6 +24,42 @@ def sanitize_name(name):
     if name and name[0].isdigit():
         name = 't_' + name
     return name if name else 'unnamed'
+
+
+def escape_sql_value(value, col_type):
+    """Escapa valores para SQL de forma segura."""
+    if pd.isna(value) or value is None:
+        return 'NULL'
+    
+    # Boolean
+    if col_type == 'BOOLEAN':
+        if isinstance(value, bool):
+            return 'TRUE' if value else 'FALSE'
+        if str(value).lower() in ('true', '1', 'yes', 'sim'):
+            return 'TRUE'
+        return 'FALSE'
+    
+    # Numérico
+    if 'INTEGER' in col_type or 'BIGINT' in col_type or col_type == 'NUMERIC':
+        if pd.api.types.is_numeric_dtype(type(value)):
+            return str(value)
+        try:
+            return str(float(value))
+        except:
+            return 'NULL'
+    
+    # Data/Hora
+    if col_type == 'TIMESTAMP':
+        if isinstance(value, (datetime, pd.Timestamp)):
+            return f"'{value.strftime('%Y-%m-%d %H:%M:%S')}'"
+        if isinstance(value, str):
+            return f"'{value}'"
+        return 'NULL'
+    
+    # String - escapa aspas simples
+    value_str = str(value)
+    value_str = value_str.replace("'", "''")
+    return f"'{value_str}'"
 
 
 def infer_postgres_type(series):
@@ -66,74 +102,24 @@ def infer_postgres_type(series):
     return 'TEXT'
 
 
-def escape_sql_value(value, col_type):
-    """Escapa valores para SQL de forma segura."""
-    if pd.isna(value) or value is None:
-        return 'NULL'
-    
-    # Boolean
-    if col_type == 'BOOLEAN':
-        if isinstance(value, bool):
-            return 'TRUE' if value else 'FALSE'
-        if str(value).lower() in ('true', '1', 'yes', 'sim'):
-            return 'TRUE'
-        return 'FALSE'
-    
-    # Numérico
-    if 'INTEGER' in col_type or 'BIGINT' in col_type or col_type == 'NUMERIC':
-        if pd.api.types.is_numeric_dtype(type(value)):
-            return str(value)
-        try:
-            return str(float(value))
-        except:
-            return 'NULL'
-    
-    # Data/Hora
-    if col_type == 'TIMESTAMP':
-        if isinstance(value, (datetime, pd.Timestamp)):
-            return f"'{value.strftime('%Y-%m-%d %H:%M:%S')}'"
-        if isinstance(value, str):
-            return f"'{value}'"
-        return 'NULL'
-    
-    # String - escapa aspas simples
-    value_str = str(value)
-    value_str = value_str.replace("'", "''")
-    return f"'{value_str}'"
-
-
-def processar_planilha_com_dados(df, table_name, excel_path, sheet_name):
-    """Processa uma planilha com dados e retorna o SQL gerado."""
+def processar_planilha_inserts(df, table_name, excel_path, sheet_name):
+    """Processa uma planilha e retorna apenas os INSERTs."""
     sql_lines = []
     
     if df.empty:
         sql_lines.append(f"-- Planilha '{sheet_name}' está vazia\n\n")
-        return sql_lines
+        return sql_lines, 0
     
-    # CREATE TABLE
-    sql_lines.append(f"CREATE TABLE IF NOT EXISTS {table_name} (\n")
-    
+    # Obter informações das colunas (para inferir tipos e sanitizar nomes)
     columns_info = []
     for col in df.columns:
         col_name = sanitize_name(str(col))
         col_type = infer_postgres_type(df[col])
-        nullable = "NULL" if df[col].isna().any() else "NOT NULL"
         columns_info.append({
             'name': col_name,
             'type': col_type,
             'original': str(col)
         })
-        sql_lines.append(f"    {col_name} {col_type} {nullable}")
-    
-    sql_lines.append("\n);\n\n")
-    
-    # Comentários sobre as colunas
-    sql_lines.append("-- Comentários sobre as colunas:\n")
-    for col_info in columns_info:
-        original_name = col_info['original'].replace("'", "''")
-        sql_lines.append(f"COMMENT ON COLUMN {table_name}.{col_info['name']} IS '{original_name}';\n")
-    
-    sql_lines.append("\n")
     
     # INSERTs dos dados
     if len(df) > 0:
@@ -171,7 +157,7 @@ def processar_planilha_com_dados(df, table_name, excel_path, sheet_name):
 
 
 def excel_to_sql(excel_path, sql_path):
-    """Converte um arquivo Excel em script SQL PostgreSQL com dados (todas as planilhas)."""
+    """Converte um arquivo Excel em script SQL PostgreSQL (apenas INSERTs, todas as planilhas)."""
     try:
         # Abrir arquivo Excel para ler todas as planilhas
         excel_file = pd.ExcelFile(excel_path)
@@ -188,7 +174,7 @@ def excel_to_sql(excel_path, sql_path):
         usar_prefixo = len(sheet_names) > 1
         
         # Gera o SQL para todas as planilhas
-        sql_lines = [f"-- Tabelas geradas a partir de: {Path(excel_path).name}\n"]
+        sql_lines = [f"-- INSERTs gerados a partir de: {Path(excel_path).name}\n"]
         sql_lines.append(f"-- Gerado em: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         sql_lines.append(f"-- Total de planilhas: {len(sheet_names)}\n\n")
         
@@ -208,7 +194,7 @@ def excel_to_sql(excel_path, sql_path):
                     table_name = arquivo_base
                 
                 # Processa a planilha
-                sql_planilha, num_linhas = processar_planilha_com_dados(df, table_name, excel_path, sheet_name)
+                sql_planilha, num_linhas = processar_planilha_inserts(df, table_name, excel_path, sheet_name)
                 sql_lines.extend(sql_planilha)
                 
                 planilhas_processadas += 1
@@ -247,6 +233,11 @@ def main():
         print(f"Erro: A pasta '{xlsx_dir}' não existe!")
         return
     
+    print("=" * 50)
+    print("Conversor de Excel para PostgreSQL (apenas INSERTs)")
+    print("=" * 50)
+    print()
+    
     # Busca todos os arquivos .xlsx na pasta xlsx
     xlsx_files = list(xlsx_dir.glob("*.xlsx"))
     
@@ -259,7 +250,7 @@ def main():
     
     # Processa cada arquivo
     for xlsx_file in xlsx_files:
-        sql_file = sql_dir / f"psql-with-data-{xlsx_file.stem}.sql"
+        sql_file = sql_dir / f"psql-inserts-only-{xlsx_file.stem}.sql"
         excel_to_sql(xlsx_file, sql_file)
     
     print(f"\n✓ Conversão concluída! Arquivos SQL salvos em '{sql_dir}'")
