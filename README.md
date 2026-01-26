@@ -105,6 +105,21 @@ Converte arquivos GDB (Firebird) para CSV. Duas versões disponíveis:
      - Servidor Firebird Windows instalado (instaladores em `modules/fbexport/installer/`)
      - Requer `modules/fbexport/exe/fbexport.exe`
 
+### Host Schema PostgreSQL para SQL
+
+Extrai a estrutura (schema) de um banco PostgreSQL e gera scripts SQL com CREATE TABLE, constraints, índices, etc.
+
+#### Script Disponível
+
+1. **`conversores/host-schema-psql_to_psql/host-schema-psql_to_psql.py`**
+   - Conecta a um banco PostgreSQL
+   - Extrai a estrutura completa dos schemas especificados
+   - Gera arquivos SQL com CREATE TABLE, constraints, índices
+   - Suporta múltiplos schemas
+   - Se a lista de schemas estiver vazia, extrai todos os schemas
+   - Arquivos gerados: `files/psql/schema-{nome_schema}.sql`
+   - ⚠️ Requisito: Acesso ao banco PostgreSQL e biblioteca `psycopg2`
+
 ### Utilitários
 
 #### Divisor de Arquivos SQL
@@ -166,6 +181,11 @@ converter/
 │   │   ├── gdb_to_csv-1.py  # Versão 1: f2cagent (todas as tabelas)
 │   │   ├── gdb_to_csv-2.py  # Versão 2: fbexport (tabelas específicas)
 │   │   ├── tabelas.json     # Configuração das tabelas (apenas versão 2)
+│   │   ├── requirements.txt
+│   │   └── README.md
+│   ├── host-schema-psql_to_psql/  # Conversor: Host Schema → SQL
+│   │   ├── host-schema-psql_to_psql.py
+│   │   ├── config.json      # Configuração de conexão e schemas
 │   │   ├── requirements.txt
 │   │   └── README.md
 │   └── sql_splitter/        # Utilitário: Divisor de SQL
@@ -273,6 +293,18 @@ Para converter arquivos GDB (Firebird) para CSV (tabelas específicas):
 python conversores/gdb_to_csv/gdb_to_csv-2.py
 ```
 
+### Extrair Schema de Banco PostgreSQL
+
+Para extrair a estrutura de schemas de um banco PostgreSQL:
+
+1. Configure o arquivo `conversores/host-schema-psql_to_psql/config.json` com as informações de conexão
+2. Especifique os schemas a extrair (ou deixe vazio para extrair todos)
+3. Execute o script:
+
+```bash
+python conversores/host-schema-psql_to_psql/host-schema-psql_to_psql.py
+```
+
 ### Dividir Arquivo SQL Grande
 
 Para dividir um arquivo SQL grande em blocos menores:
@@ -320,6 +352,17 @@ python conversores/sql_splitter/sql_splitter.py
 3. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
 4. Execute o script `gdb_to_csv-2.py`
 5. Os arquivos CSV serão gerados em `files/csv/{nome_arquivo}/{nome_tabela}.csv`
+
+**Host Schema PostgreSQL para SQL:**
+1. **Instale as dependências**:
+   ```bash
+   pip install -r conversores/host-schema-psql_to_psql/requirements.txt
+   ```
+2. **Configure a conexão** no arquivo `conversores/host-schema-psql_to_psql/config.json`:
+   - Informações de conexão (host, porta, banco, usuário, senha)
+   - Lista de schemas a extrair (ou deixe vazio `[]` para extrair todos)
+3. Execute o script `host-schema-psql_to_psql.py`
+4. Os arquivos SQL serão gerados em `files/psql/schema-{nome_schema}.sql`
 
 **Dividir Arquivo SQL:**
 1. Coloque seu arquivo `.sql` na pasta `files/psql/`
@@ -398,6 +441,11 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
   - **Requisito**: Servidor Firebird Windows instalado (instaladores em `modules/fbexport/installer/`)
   - **Requisito**: Módulo `fbexport.exe` em `modules/fbexport/exe/fbexport.exe`
 
+### Host Schema PostgreSQL para SQL
+- `psycopg2-binary>=2.9.0`: Biblioteca para conexão com PostgreSQL
+- **Requisito**: Acesso de rede ao servidor PostgreSQL
+- **Requisito**: Credenciais válidas para conexão ao banco
+
 ## ⚠️ Observações
 
 ### Excel para PostgreSQL
@@ -448,6 +496,17 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Requer o módulo `fbexport.exe` em `modules/fbexport/exe/fbexport.exe`
 - Cada tabela especificada no JSON gera um arquivo CSV separado
 - Os arquivos GDB originais são mantidos na pasta após a conversão
+
+### Host Schema PostgreSQL para SQL
+- Conecta a um banco PostgreSQL remoto
+- Extrai apenas a estrutura (schema), não os dados
+- Configuração via arquivo JSON (`config.json`) com:
+  - Informações de conexão (host, porta, banco, usuário, senha)
+  - Lista de schemas a extrair (ou vazio para extrair todos)
+- Os arquivos SQL são gerados em `files/psql/schema-{nome_schema}.sql`
+- Extrai: CREATE TABLE, Primary Keys, Foreign Keys, Unique Constraints, Índices
+- Schemas do sistema são ignorados automaticamente
+- Requer biblioteca `psycopg2` para conexão com PostgreSQL
 
 ### Divisor de Arquivos SQL
 - Divide arquivos SQL em blocos de 50.000 linhas (padrão)

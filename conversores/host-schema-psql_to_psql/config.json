@@ -1,0 +1,14 @@
+{
+  "conexao": {
+    "host": "localhost",
+    "porta": 5432,
+    "banco": "nome_do_banco",
+    "usuario": "postgres",
+    "senha": "sua_senha"
+  },
+  "schemas": [
+    "public",
+    "schema1",
+    "schema2"
+  ]
+}
