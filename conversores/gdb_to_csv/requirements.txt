@@ -1,5 +1,6 @@
 # Este conversor não requer dependências Python adicionais
-# Utiliza apenas bibliotecas padrão do Python (subprocess, pathlib, shutil)
+# Utiliza apenas bibliotecas padrão do Python (subprocess, pathlib, json)
 #
 # REQUISITO: Windows apenas
-# REQUISITO: Módulo f2cagent.exe em modules/f2cagent/f2cagent.exe
+# REQUISITO: Servidor Firebird Windows instalado (ver modules/fbexport/installer/)
+# REQUISITO: Módulo fbexport.exe em modules/fbexport/exe/fbexport.exe

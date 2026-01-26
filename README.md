@@ -81,17 +81,29 @@ Converte arquivos DBC (dBASE/FoxPro) em scripts SQL para PostgreSQL. Suporta arq
 
 ### GDB para CSV
 
-Converte arquivos GDB (Firebird) para CSV utilizando o módulo f2cagent.
+Converte arquivos GDB (Firebird) para CSV. Duas versões disponíveis:
 
-⚠️ **Requisito**: Windows apenas - Requer `modules/f2cagent/f2cagent.exe`
+#### Scripts Disponíveis
 
-#### Script Disponível
-
-1. **`conversores/gdb_to_csv/gdb_to_csv.py`**
+1. **`conversores/gdb_to_csv/gdb_to_csv-1.py`** (f2cagent)
    - Converte arquivos .GDB para CSV
    - Processa múltiplos arquivos automaticamente
+   - Converte todas as tabelas de cada arquivo GDB automaticamente
    - Cria pastas separadas para cada arquivo convertido
    - Arquivos gerados: `files/csv/{nome_arquivo}/*.csv`
+   - ⚠️ Requisito: Windows apenas - Requer `modules/f2cagent/f2cagent.exe`
+
+2. **`conversores/gdb_to_csv/gdb_to_csv-2.py`** (fbexport)
+   - Converte arquivos .GDB para CSV
+   - Processa múltiplos arquivos automaticamente
+   - Exporta tabelas específicas definidas em arquivo JSON (`tabelas.json`)
+   - Cria pastas separadas para cada arquivo convertido
+   - Gera um arquivo CSV para cada tabela especificada
+   - Arquivos gerados: `files/csv/{nome_arquivo}/{nome_tabela}.csv`
+   - ⚠️ Requisitos: 
+     - Windows apenas
+     - Servidor Firebird Windows instalado (instaladores em `modules/fbexport/installer/`)
+     - Requer `modules/fbexport/exe/fbexport.exe`
 
 ### Utilitários
 
@@ -125,8 +137,14 @@ converter/
 │       ├── psql-no-data-*.sql
 │       └── psql-with-data-*.sql
 ├── modules/                 # Módulos externos necessários
-│   └── f2cagent/            # Conversor GDB (Windows)
-│       └── f2cagent.exe
+│   ├── f2cagent/            # Conversor GDB alternativo (Windows)
+│   │   └── f2cagent.exe
+│   └── fbexport/            # Conversor GDB (Windows)
+│       ├── exe/
+│       │   └── fbexport.exe
+│       └── installer/       # Instaladores do servidor Firebird Windows
+│           ├── Firebird-1.5.6.5026-0-Win32.exe
+│           └── Firebird-2.5.9.27139_0_Win32.exe
 ├── conversores/             # Pasta com todos os conversores
 │   ├── xlsx_to_psql/        # Conversor: Excel → PostgreSQL
 │   │   ├── xlsx_to_psql_no_data.py
@@ -145,7 +163,9 @@ converter/
 │   │   ├── dbc_to_psql_inserts_only.py
 │   │   └── requirements.txt
 │   ├── gdb_to_csv/          # Conversor: GDB → CSV
-│   │   ├── gdb_to_csv.py
+│   │   ├── gdb_to_csv-1.py  # Versão 1: f2cagent (todas as tabelas)
+│   │   ├── gdb_to_csv-2.py  # Versão 2: fbexport (tabelas específicas)
+│   │   ├── tabelas.json     # Configuração das tabelas (apenas versão 2)
 │   │   ├── requirements.txt
 │   │   └── README.md
 │   └── sql_splitter/        # Utilitário: Divisor de SQL
@@ -237,12 +257,20 @@ Para gerar apenas os INSERTs:
 python conversores/dbc_to_psql/dbc_to_psql_inserts_only.py
 ```
 
-### Converter GDB para CSV
+### Converter GDB para CSV (Versão 1 - f2cagent)
 
-Para converter arquivos GDB (Firebird) para CSV:
+Para converter arquivos GDB (Firebird) para CSV (todas as tabelas):
 
 ```bash
-python conversores/gdb_to_csv/gdb_to_csv.py
+python conversores/gdb_to_csv/gdb_to_csv-1.py
+```
+
+### Converter GDB para CSV (Versão 2 - fbexport)
+
+Para converter arquivos GDB (Firebird) para CSV (tabelas específicas):
+
+```bash
+python conversores/gdb_to_csv/gdb_to_csv-2.py
 ```
 
 ### Dividir Arquivo SQL Grande
@@ -280,10 +308,18 @@ python conversores/sql_splitter/sql_splitter.py
    - Todos os DBCs são processados em um único arquivo SQL
    - Suporta encoding Latin1 (padrão dBASE/FoxPro)
 
-**GDB para CSV:**
+**GDB para CSV (Versão 1 - f2cagent):**
 1. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
-2. Execute o script `gdb_to_csv.py`
-3. Os arquivos CSV serão gerados em `files/csv/{nome_arquivo}/`
+2. Execute o script `gdb_to_csv-1.py`
+3. Os arquivos CSV serão gerados em `files/csv/{nome_arquivo}/` (todas as tabelas)
+
+**GDB para CSV (Versão 2 - fbexport):**
+1. **Instale o servidor Firebird Windows** (se ainda não instalado):
+   - Acesse `modules/fbexport/installer/` e execute um dos instaladores
+2. **Configure as tabelas** no arquivo `conversores/gdb_to_csv/tabelas.json`
+3. Coloque seus arquivos `.GDB` na pasta `files/gdb/`
+4. Execute o script `gdb_to_csv-2.py`
+5. Os arquivos CSV serão gerados em `files/csv/{nome_arquivo}/{nome_tabela}.csv`
 
 **Dividir Arquivo SQL:**
 1. Coloque seu arquivo `.sql` na pasta `files/psql/`
@@ -354,8 +390,13 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 
 ### GDB para CSV
 - Nenhuma dependência Python adicional (usa bibliotecas padrão)
-- **Requisito**: Windows apenas
-- **Requisito**: Módulo `f2cagent.exe` em `modules/f2cagent/f2cagent.exe`
+- **Versão 1 (f2cagent)**:
+  - **Requisito**: Windows apenas
+  - **Requisito**: Módulo `f2cagent.exe` em `modules/f2cagent/f2cagent.exe`
+- **Versão 2 (fbexport)**:
+  - **Requisito**: Windows apenas
+  - **Requisito**: Servidor Firebird Windows instalado (instaladores em `modules/fbexport/installer/`)
+  - **Requisito**: Módulo `fbexport.exe` em `modules/fbexport/exe/fbexport.exe`
 
 ## ⚠️ Observações
 
@@ -389,10 +430,23 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Três opções: apenas estrutura, estrutura + dados, ou apenas INSERTs
 
 ### GDB para CSV
+
+**Versão 1 (f2cagent):**
 - **Windows apenas**: Este conversor só funciona no Windows
 - Os arquivos GDB devem estar na pasta `files/gdb/`
-- Os arquivos CSV são gerados em `files/csv/{nome_arquivo}/`
+- Os arquivos CSV são gerados em `files/csv/{nome_arquivo}/` (todas as tabelas)
 - Requer o módulo `f2cagent.exe` em `modules/f2cagent/f2cagent.exe`
+- Converte todas as tabelas automaticamente
+- Os arquivos GDB originais são mantidos na pasta após a conversão
+
+**Versão 2 (fbexport):**
+- **Windows apenas**: Este conversor só funciona no Windows
+- **Servidor Firebird Windows**: Requer instalação do servidor Firebird (instaladores em `modules/fbexport/installer/`)
+- Os arquivos GDB devem estar na pasta `files/gdb/`
+- As tabelas a serem exportadas devem ser configuradas no arquivo `tabelas.json`
+- Os arquivos CSV são gerados em `files/csv/{nome_arquivo}/{nome_tabela}.csv`
+- Requer o módulo `fbexport.exe` em `modules/fbexport/exe/fbexport.exe`
+- Cada tabela especificada no JSON gera um arquivo CSV separado
 - Os arquivos GDB originais são mantidos na pasta após a conversão
 
 ### Divisor de Arquivos SQL
