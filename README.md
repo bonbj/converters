@@ -17,14 +17,22 @@ Converte arquivos Excel (.xlsx) em scripts SQL para PostgreSQL, gerando a estrut
 1. **`conversores/xlsx_to_psql/xlsx_to_psql_no_data.py`**
    - Gera apenas a estrutura do banco (CREATE TABLE)
    - Não inclui dados (INSERT)
+   - Infere tipos (INTEGER, NUMERIC, TEXT, etc.) a partir dos dados
    - Arquivo gerado: `psql-no-data-{nome_arquivo}.sql`
 
-2. **`conversores/xlsx_to_psql/xlsx_to_psql_with_data.py`**
+2. **`conversores/xlsx_to_psql/xlsx_to_psql_no_data_all_strings.py`**
+   - Gera apenas a estrutura do banco (CREATE TABLE)
+   - Não inclui dados (INSERT)
+   - Todas as colunas são definidas como TEXT (string)
+   - Útil quando os dados devem ser tratados sempre como texto
+   - Arquivo gerado: `psql-no-data-{nome_arquivo}-all-strings.sql`
+
+3. **`conversores/xlsx_to_psql/xlsx_to_psql_with_data.py`**
    - Gera a estrutura do banco (CREATE TABLE) + dados (INSERT)
    - Inclui todos os dados do arquivo Excel
    - Arquivo gerado: `psql-with-data-{nome_arquivo}.sql`
 
-3. **`conversores/xlsx_to_psql/xlsx_to_psql_inserts_only.py`**
+4. **`conversores/xlsx_to_psql/xlsx_to_psql_inserts_only.py`**
    - Gera apenas os INSERTs (sem CREATE TABLE)
    - Útil quando a estrutura já existe no banco
    - Arquivo gerado: `psql-inserts-only-{nome_arquivo}.sql`
@@ -171,7 +179,9 @@ converter/
 ├── conversores/             # Pasta com todos os conversores
 │   ├── xlsx_to_psql/        # Conversor: Excel → PostgreSQL
 │   │   ├── xlsx_to_psql_no_data.py
+│   │   ├── xlsx_to_psql_no_data_all_strings.py
 │   │   ├── xlsx_to_psql_with_data.py
+│   │   ├── xlsx_to_psql_inserts_only.py
 │   │   └── requirements.txt
 │   ├── xlsx_to_csv/         # Conversor: Excel → CSV
 │   │   ├── xlsx_to_csv.py
@@ -216,10 +226,18 @@ pip install -r conversores/xlsx_to_psql/requirements.txt
 
 ### Converter Excel para PostgreSQL (sem dados)
 
-Para gerar apenas a estrutura das tabelas:
+Para gerar apenas a estrutura das tabelas (com inferência de tipos):
 
 ```bash
 python conversores/xlsx_to_psql/xlsx_to_psql_no_data.py
+```
+
+### Converter Excel para PostgreSQL (sem dados, todas colunas TEXT)
+
+Para gerar apenas a estrutura com todas as colunas como TEXT (string):
+
+```bash
+python conversores/xlsx_to_psql/xlsx_to_psql_no_data_all_strings.py
 ```
 
 ### Converter Excel para PostgreSQL (com dados)
@@ -399,7 +417,7 @@ Os conversores de CSV e Excel analisam os dados e inferem automaticamente os tip
 - **BOOLEAN**: Para valores booleanos
 - **TIMESTAMP**: Para datas e horas
 
-Para CSV, existe a variante **`csv_to_psql_no_data_all_strings.py`**, que define todas as colunas como **TEXT** (sem inferência), útil quando os dados devem ser sempre tratados como string.
+Existem variantes **all_strings** que definem todas as colunas como **TEXT** (sem inferência): **`csv_to_psql_no_data_all_strings.py`** (CSV) e **`xlsx_to_psql_no_data_all_strings.py`** (Excel), úteis quando os dados devem ser sempre tratados como string.
 
 ### Sanitização de Nomes
 
@@ -471,6 +489,7 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Os arquivos Excel devem estar na pasta `files/xlsx/`
 - Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
+- **Variante all_strings**: `xlsx_to_psql_no_data_all_strings.py` gera todas as colunas como TEXT (sem inferência de tipos), útil quando os dados devem ser sempre tratados como string
 
 ### Excel para CSV
 - Os arquivos Excel devem estar na pasta `files/xlsx/`
