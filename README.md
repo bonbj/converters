@@ -74,6 +74,18 @@ Converte arquivos CSV em scripts SQL para PostgreSQL, gerando a estrutura das ta
    - Inclui todos os dados dos arquivos CSV
    - Arquivo gerado: `psql-with-data-csv.sql`
 
+### CSV para CSV (remover aspas)
+
+Remove todas as aspas duplas do conteúdo dos arquivos CSV e gera novos CSVs.
+
+#### Script Disponível
+
+1. **`conversores/csv_remove_quotes/csv_remove_quotes.py`**
+   - Lê CSVs de `files/csv/` (raiz e subpastas)
+   - Remove o caractere `"` (aspas duplas) de todas as células
+   - Mantém o delimitador detectado automaticamente
+   - Arquivos gerados: `files/csv_sem_aspas/` (mesma estrutura de pastas)
+
 ### DBC para PostgreSQL
 
 Converte arquivos DBC (dBASE/FoxPro) em scripts SQL para PostgreSQL. Suporta arquivos .dbc e .dbf.
@@ -164,6 +176,8 @@ converter/
 │   │   ├── *.csv            # CSVs na raiz
 │   │   └── {nome_arquivo}/  # CSVs em subpastas
 │   │       └── *.csv
+│   ├── csv_sem_aspas/       # CSVs gerados sem aspas duplas
+│   │   └── *.csv
 │   └── psql/                # Arquivos SQL gerados
 │       ├── psql-no-data-*.sql
 │       └── psql-with-data-*.sql
@@ -190,6 +204,9 @@ converter/
 │   │   ├── csv_to_psql_no_data.py
 │   │   ├── csv_to_psql_no_data_all_strings.py
 │   │   ├── csv_to_psql_with_data.py
+│   │   └── requirements.txt
+│   ├── csv_remove_quotes/   # Conversor: CSV → CSV (remover aspas)
+│   │   ├── csv_remove_quotes.py
 │   │   └── requirements.txt
 │   ├── dbc_to_psql/         # Conversor: DBC → PostgreSQL
 │   │   ├── dbc_to_psql_no_data.py
@@ -288,6 +305,14 @@ Para gerar a estrutura e os dados:
 python conversores/csv_to_psql/csv_to_psql_with_data.py
 ```
 
+### Remover aspas duplas de CSV
+
+Para gerar CSVs sem o caractere de aspas duplas no conteúdo:
+
+```bash
+python conversores/csv_remove_quotes/csv_remove_quotes.py
+```
+
 ### Converter DBC para PostgreSQL (sem dados)
 
 Para gerar apenas a estrutura das tabelas:
@@ -367,6 +392,11 @@ python conversores/sql_splitter/sql_splitter.py
 2. Execute o script desejado
 3. Os arquivos SQL serão gerados na pasta `files/psql/`
    - Todos os CSVs são processados em um único arquivo SQL
+
+**CSV para CSV (remover aspas):**
+1. Coloque seus arquivos `.csv` na pasta `files/csv/` (raiz ou em subpastas)
+2. Execute `csv_remove_quotes.py`
+3. Os CSVs sem aspas duplas serão gerados em `files/csv_sem_aspas/` (mesma estrutura de pastas)
 
 **DBC para PostgreSQL:**
 1. Coloque seus arquivos `.dbc` ou `.dbf` na pasta `files/dbc/`
@@ -465,6 +495,9 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 ### CSV para PostgreSQL
 - `pandas>=2.0.0`: Manipulação de dados e leitura de arquivos CSV
 
+### CSV para CSV (remover aspas)
+- `pandas>=2.0.0`: Leitura e gravação de arquivos CSV
+
 ### DBC para PostgreSQL
 - `dbfread>=2.0.7`: Leitura de arquivos DBC/dBASE/FoxPro
 
@@ -506,6 +539,12 @@ A pasta `files/` foi criada para manter a organização modular do projeto. Cada
 - Os arquivos SQL gerados são salvos na pasta `files/psql/`
 - Para arquivos grandes, o script com dados pode demorar mais tempo
 - **Variante all_strings**: `csv_to_psql_no_data_all_strings.py` gera todas as colunas como TEXT (sem inferência de tipos), útil quando os dados devem ser sempre tratados como string
+
+### CSV para CSV (remover aspas)
+- Os arquivos CSV de entrada devem estar em `files/csv/` (raiz ou subpastas)
+- A saída é gravada em `files/csv_sem_aspas/`, mantendo a mesma estrutura de pastas
+- O delimitador (vírgula, ponto e vírgula, tab, pipe) é detectado e preservado
+- Apenas o caractere `"` é removido do conteúdo; o arquivo continua em formato CSV
 
 ### DBC para PostgreSQL
 - Os arquivos DBC devem estar na pasta `files/dbc/`

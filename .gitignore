@@ -3,3 +3,4 @@ files/xlsx/*.xlsx
 files/gdb/*.GDB
 files/csv/*.csv
 files/csv/**/*.csv
+files/csv_sem_aspas/**/*.csv
